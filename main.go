@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"time"
 )
 
 func main() {
@@ -43,6 +44,8 @@ func initDb(db *gorm.DB) {
 	db.CreateTable(&User{})
 	db.DropTable(&Calendar{})
 	db.CreateTable(&Calendar{})
+	db.DropTable(&Appointment{})
+	db.CreateTable(&Appointment{})
 
 	for _, user := range users {
 		db.Create(&user)
@@ -54,6 +57,16 @@ func initDb(db *gorm.DB) {
 		Username: "test",
 		Calendar: Calendar{
 			Name: "Calendar Shit",
+			Appointments: []Appointment{
+				{
+					Subject:   "Subject 1",
+					Attendees: users,
+				},
+				{
+					Subject:   "Subject 2",
+					Attendees: users,
+				},
+			},
 		},
 	})
 }
@@ -68,8 +81,19 @@ type User struct {
 
 type Calendar struct {
 	gorm.Model
-	Name   string
-	UserId uint
+	Name         string
+	UserId       uint
+	Appointments []Appointment
+}
+
+type Appointment struct {
+	gorm.Model
+	Subject     string
+	Description string
+	StartTime   time.Time
+	Lenght      uint
+	CalendarID  uint
+	Attendees   []User `gorm:"many2many:appointment_user"`
 }
 
 var users []User = []User{
