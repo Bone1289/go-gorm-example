@@ -41,17 +41,35 @@ func searchUser(db *gorm.DB) User {
 func initDb(db *gorm.DB) {
 	db.DropTable(&User{})
 	db.CreateTable(&User{})
+	db.DropTable(&Calendar{})
+	db.CreateTable(&Calendar{})
 
 	for _, user := range users {
 		db.Create(&user)
 	}
+
+	db.Debug().Model(&Calendar{}).AddForeignKey("user_id", "users(id)", "CASCADE", "CASCADE")
+
+	db.Debug().Save(&User{
+		Username: "test",
+		Calendar: Calendar{
+			Name: "Calendar Shit",
+		},
+	})
 }
 
 type User struct {
-	ID        uint
+	gorm.Model
 	Username  string
 	FirstName string
 	LastName  string
+	Calendar  Calendar
+}
+
+type Calendar struct {
+	gorm.Model
+	Name   string
+	UserId uint
 }
 
 var users []User = []User{
